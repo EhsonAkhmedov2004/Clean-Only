@@ -1,0 +1,32 @@
+﻿
+
+namespace Application.UserLogic.Balance.Commands.BalanceUp;
+public record class BalanceUpCommand(int money,string Token):IRequest<string>
+{
+
+}
+public class BalanceUpHandler : IRequestHandler<BalanceUpCommand, string>
+{
+    private readonly IDatabase _database;
+    public BalanceUpHandler(IDatabase database)
+    {
+        _database = database;
+    }
+
+    public async Task<string> Handle(BalanceUpCommand command,CancellationToken cancellationToken)
+    {
+        if(!isValid(command.Token)) return ToJSON("Token is not valid", 400);
+        var username = ReadToken(command.Token).Claims.First(i=>i.Type == "Username").Value;
+
+    
+        var account = await _database.Users.FirstAsync(i => i.Username == username);
+        account.Balance += command.money;
+
+        await _database.SaveChangesAsync(cancellationToken);
+
+        return ToJSON($"your balance replenished with {command.money} $", 200);
+
+
+
+    }
+}
