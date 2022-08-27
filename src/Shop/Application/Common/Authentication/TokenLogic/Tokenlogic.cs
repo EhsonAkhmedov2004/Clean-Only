@@ -14,6 +14,7 @@ namespace Application.Common.Authentication.TokenLogic
             Console.WriteLine(Token.ValidTo);
             var time = DateTime.Compare(DateTime.Now,Token.ValidTo);
 
+            
             if (time > 0) return false;
 
             return true;

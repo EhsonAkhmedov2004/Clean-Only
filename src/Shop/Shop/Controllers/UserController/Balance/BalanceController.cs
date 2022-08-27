@@ -24,27 +24,30 @@ namespace Shop.Controllers.UserController.Balance
 
         [HttpGet, Authorize(Roles = "User")]
         
-        public async Task<string> Balance()
+        public async Task<ActionResult> Balance()
         {
-            return await _mediator.Send(new BalanceQuery(Request.Cookies["UserToken"]));
+            var (response,status) = await _mediator.Send(new BalanceQuery(Request.Cookies["UserToken"]));
+            return StatusCode(status,response);
         }
 
         [HttpPost,Authorize(Roles="User")]
         [Route("putMoney")]
-        public async Task<string> BalanceUp([FromBody]int money)
+        public async Task<ActionResult> BalanceUp([FromBody]int money)
         {
-            var result = await _mediator.Send(new BalanceUpCommand(money, Request.Cookies["UserToken"]));
-            return result;
-            
-           
+     
+            var (response, status) = await _mediator.Send(new BalanceUpCommand(money, Request.Cookies["UserToken"]));
+            return StatusCode(status, response);
+
+
         }
 
         [HttpPost, Authorize(Roles = "User")]
         [Route("getMoney")]
-        public async Task<string> BalanceDown([FromBody]int money)
+        public async Task<ActionResult> BalanceDown([FromBody]int money)
         {
-            var result = await _mediator.Send(new BalanceDownCommand(money, Request.Cookies["UserToken"]));
-            return result;
+            var (response, status) = await _mediator.Send(new BalanceDownCommand(money, Request.Cookies["UserToken"]));
+            return StatusCode(status, response);
+
 
 
         }

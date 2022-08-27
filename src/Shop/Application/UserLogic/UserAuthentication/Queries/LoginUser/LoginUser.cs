@@ -1,13 +1,13 @@
 ﻿using System.Security.Cryptography;
-
+using Microsoft.EntityFrameworkCore;
 
 
 
 namespace Application.UserLogic.UserAuthentication.Queries.LoginUser;
-public record class LoginUserQuery   (string Username,string Password) : IRequest<string>{ }
+public record class LoginUserQuery   (string Username,string Password) : IRequest<Response<string>>{ }
 
 
-public class LoginUserHandler:IRequestHandler<LoginUserQuery,string>
+public class LoginUserHandler:IRequestHandler<LoginUserQuery,Response<string>>
 {
     private readonly IDatabase _database;
     private readonly IAuth _auth;
@@ -22,12 +22,12 @@ public class LoginUserHandler:IRequestHandler<LoginUserQuery,string>
         _config = config;
     }
 
-    public async Task<string> Handle(LoginUserQuery query,CancellationToken cancellationToken)
+    public async Task<Response<string>> Handle(LoginUserQuery query,CancellationToken cancellationToken)
     {
 
-        UserModel user = _database.Users.ToList().First(i => i.Username == query.Username);
+        UserModel user = await _database.Users.FirstAsync(i => i.Username == query.Username);
 
-        if (user == null) return ToJSON("Account not found",404);
+        if (user == null) return Respond("Account not found",404);
 
         var passwordSalt = user.SaltPassword;
 
@@ -44,14 +44,12 @@ public class LoginUserHandler:IRequestHandler<LoginUserQuery,string>
         }
         
 
-        if (!user.Password.SequenceEqual(hashed_password)) return "Passoword is wrong";
-
+        if (!user.Password.SequenceEqual(hashed_password)) return Respond("Passoword is wrong",400);
+        
         string jwt = _auth.CreateTokenForUser(user).ToString();
 
-     
-        
 
-        return ToJSON(jwt,200);
+        return Respond(jwt,200);
         
     }
 }

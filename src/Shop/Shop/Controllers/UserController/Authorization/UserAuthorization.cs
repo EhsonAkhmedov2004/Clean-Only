@@ -5,6 +5,7 @@ using Domain.Entities.User;
 using Application.UserLogic.UserAuthentication.Commands.RegisterUser;
 using Application.Common.Authentication.Cookie;
 using Application.Common.Models;
+using Application.Common.Help;
 namespace Shop.Controllers.UserController.Authorization
 {
     [Route("api/[controller]")]
@@ -19,13 +20,15 @@ namespace Shop.Controllers.UserController.Authorization
 
         [HttpPost]
         [Route("Login")]
-        public async Task<string> Login([FromBody]UserLoginDTO user)
+        public async Task<ActionResult> Login([FromBody]UserLoginDTO user)
         {
-            var jwt = await _mediator.Send(new LoginUserQuery(user.Username, user.Password));
+            var (response,status) = await _mediator.Send(new LoginUserQuery(user.Username, user.Password));
 
-            Response.Cookies.Append("userToken", jwt , new Cookies().Cookie(DateTime.Now.AddDays(1)));
+            Response.Cookies.Append("userToken", response, new Cookies().Cookie(DateTime.Now.AddDays(1)));
 
-            return jwt;
+           
+
+            return StatusCode(status,response);
         }
 
         [HttpPost]

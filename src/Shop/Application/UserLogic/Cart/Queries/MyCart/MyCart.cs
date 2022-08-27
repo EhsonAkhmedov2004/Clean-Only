@@ -2,9 +2,9 @@
 
 
 namespace Application.UserLogic.Cart.Queries.MyCart;
-public record class MyCartQuery(string UserToken) : IRequest<string> { }
+public record class MyCartQuery(string UserToken) : IRequest<Response<List<ProductModel>>> { }
 
-public class MyCartQueryHandler : IRequestHandler<MyCartQuery, string>
+public class MyCartQueryHandler : IRequestHandler<MyCartQuery, Response<List<ProductModel>>>
 {
     private readonly IDatabase _database;
     private HttpRequestMessage response = new HttpRequestMessage();
@@ -12,7 +12,7 @@ public class MyCartQueryHandler : IRequestHandler<MyCartQuery, string>
     {
         _database = database;
     }
-    public async Task<string> Handle(MyCartQuery query,CancellationToken cancellationToken)
+    public async Task<Response<List<ProductModel>>> Handle(MyCartQuery query,CancellationToken cancellationToken)
     {
         var username = ReadToken(query.UserToken).Claims.First(claim => claim.Type == "Username").Value;
 
@@ -21,9 +21,9 @@ public class MyCartQueryHandler : IRequestHandler<MyCartQuery, string>
             .FirstOrDefaultAsync(user => user.Username == username);
 
 
-        if (user == null) return ToJSON(new List<ProductModel>(), 400);
+        if (user == null) return Respond(new List<ProductModel>(), 400);
 
-        return ToJSON(user.Cart.ToList(),200);
+        return Respond(user.Cart.ToList(),200);
 
      
        

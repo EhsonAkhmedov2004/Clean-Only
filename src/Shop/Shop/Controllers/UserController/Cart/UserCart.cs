@@ -5,7 +5,7 @@ using Application.UserLogic.Cart.Commands.Add;
 using Application.UserLogic.Cart.Commands.Remove;
 using Domain.Entities.Product;
 using Domain.Entities.User;
-using Application.Common.Json;
+using Application.Common.Help;
 using System.Text.Json;
 using Application.UserLogic.Cart.Queries.MyCart;
 
@@ -26,23 +26,31 @@ namespace Shop.Controllers.UserController.Cart
         }
 
         [HttpPost,Authorize(Roles ="User")]
-        public async Task<string> userCart()
-        {            
-            return await _mediator.Send(new MyCartQuery(Request.Cookies["UserToken"]));
+        [Produces("application/json")]
+        public async Task<ActionResult> userCart()
+        {
+            var (response,status) = await _mediator.Send(new MyCartQuery(Request.Cookies["UserToken"]));
+       
+
+            return StatusCode(status,response);
         }
 
         [HttpPost,Authorize(Roles = "User")]
         [Route("Add")]
-        public async Task<string> Add(AddCommand command)
+        [Produces("application/json")]
+        public async Task<ActionResult> Add(AddCommand command)
         {
-            return await _mediator.Send(command);       
+            var (response,status) = await _mediator.Send(command);
+
+            return StatusCode(status,response);
         }
 
         [HttpPost, Authorize(Roles = "User")]
         [Route("Remove")]
-        public async Task<string> Remove(RemoveCommand command)
+        public async Task<ActionResult> Remove(RemoveCommand command)
         {
-            return await _mediator.Send(command);           
+            var (response,status) = await _mediator.Send(command);
+            return StatusCode(status, response);
         }
     }
 }

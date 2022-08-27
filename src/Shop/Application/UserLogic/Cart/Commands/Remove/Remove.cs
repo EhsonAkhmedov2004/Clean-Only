@@ -2,9 +2,9 @@
 
 namespace Application.UserLogic.Cart.Commands.Remove;
 
-public record class RemoveCommand(string Token, int id) : IRequest<string> { }
+public record class RemoveCommand(string Token, int id) : IRequest<Response<string>> { }
 
-public class RemoveHandler:IRequestHandler<RemoveCommand,string>
+public class RemoveHandler:IRequestHandler<RemoveCommand,Response<string>>
 {
     private readonly IDatabase _database;
     public RemoveHandler(IDatabase database)
@@ -12,9 +12,9 @@ public class RemoveHandler:IRequestHandler<RemoveCommand,string>
         _database = database;
     }
 
-    public async Task<string> Handle(RemoveCommand command,CancellationToken cancellationToken)
+    public async Task<Response<string>> Handle(RemoveCommand command,CancellationToken cancellationToken)
     {
-        if (!isValid(command.Token)) return ToJSON("Token is not valid", 400);
+        if (!isValid(command.Token)) return Respond("Token is not valid", 400);
 
         var username = ReadToken(command.Token).Claims.First(u => u.Type == "Username").Value;
 
@@ -27,12 +27,12 @@ public class RemoveHandler:IRequestHandler<RemoveCommand,string>
                                .Products
                                .FirstOrDefaultAsync(p => p.Id == command.id);
 
-        if (product == null) return ToJSON("Product not found to be removed from user's cart.",400);
+        if (product == null) return Respond("Product not found to be removed from user's cart.",400);
 
         user.Cart.Remove(product);
 
         await _database.SaveChangesAsync(cancellationToken);
 
-        return ToJSON("Product was removed from User's card.",200);
+        return Respond("Product was removed from User's card.",200);
     }
 }

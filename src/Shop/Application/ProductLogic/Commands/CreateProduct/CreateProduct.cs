@@ -1,7 +1,7 @@
 ﻿
 namespace Application.ProductLogic.Commands.CreateProduct
 {
-    public record class CreateProductCommand(int Id,string Type,string Title,string Color,int Cost) : IRequest<ProductModel> { }
+    public record class CreateProductCommand(string Token,int Id,string Type,string Title,string Color,int Cost) : IRequest<ProductModel> { }
 
 
 
@@ -15,6 +15,8 @@ namespace Application.ProductLogic.Commands.CreateProduct
 
         public async Task<ProductModel> Handle(CreateProductCommand command,CancellationToken cancellationToken)
         {
+            if (ReadToken(command.Token).Claims.First(i => i.Type == "Role").Value != "Admin") return new ProductModel();
+
             ProductModel product = new ProductModel
             {
                 Id    = command.Id,

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Application.Common.Help;
 using Microsoft.AspNetCore.Mvc;
 using Domain.Entities.Product;
 using MediatR;
@@ -52,7 +52,7 @@ namespace Shop.Controllers.ProductsController
 
         [HttpPost,Authorize(Roles = "User")]
         [Route("buy")]
-        public async Task<string> BUYProduct(int id)
+        public async Task<Response<string>> BUYProduct(int id)
         {
             
             return await _mediator.Send(new BuyProductCommand(id, Request.Cookies["UserToken"]));

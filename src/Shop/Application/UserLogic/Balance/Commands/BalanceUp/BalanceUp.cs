@@ -1,11 +1,11 @@
 ﻿
 
 namespace Application.UserLogic.Balance.Commands.BalanceUp;
-public record class BalanceUpCommand(int money,string Token):IRequest<string>
+public record class BalanceUpCommand(int money,string Token):IRequest<Response<string>>
 {
 
 }
-public class BalanceUpHandler : IRequestHandler<BalanceUpCommand, string>
+public class BalanceUpHandler : IRequestHandler<BalanceUpCommand, Response<string>>
 {
     private readonly IDatabase _database;
     public BalanceUpHandler(IDatabase database)
@@ -13,9 +13,9 @@ public class BalanceUpHandler : IRequestHandler<BalanceUpCommand, string>
         _database = database;
     }
 
-    public async Task<string> Handle(BalanceUpCommand command,CancellationToken cancellationToken)
+    public async Task<Response<string>> Handle(BalanceUpCommand command,CancellationToken cancellationToken)
     {
-        if(!isValid(command.Token)) return ToJSON("Token is not valid", 400);
+        if(!isValid(command.Token)) return Respond("Token is not valid", 400);
         var username = ReadToken(command.Token).Claims.First(i=>i.Type == "Username").Value;
 
     
@@ -24,7 +24,7 @@ public class BalanceUpHandler : IRequestHandler<BalanceUpCommand, string>
 
         await _database.SaveChangesAsync(cancellationToken);
 
-        return ToJSON($"your balance replenished with {command.money} $", 200);
+        return Respond($"your balance replenished with {command.money} $", 200);
 
 
 

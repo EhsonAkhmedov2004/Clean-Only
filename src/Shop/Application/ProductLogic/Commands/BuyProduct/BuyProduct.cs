@@ -1,10 +1,10 @@
 ﻿
 
 namespace Application.ProductLogic.Commands.BuyProduct;
-public record class BuyProductCommand(int Id,string Token) : IRequest<string> { }
+public record class BuyProductCommand(int Id,string Token) : IRequest<Response<string>> { }
 
 
-public class BuyProductHandler : IRequestHandler<BuyProductCommand,string>
+public class BuyProductHandler : IRequestHandler<BuyProductCommand,Response<string>>
 {
     private readonly IDatabase _database;
 
@@ -14,9 +14,9 @@ public class BuyProductHandler : IRequestHandler<BuyProductCommand,string>
     }
 
 
-    public async Task<string> Handle(BuyProductCommand command,CancellationToken cancellationToken)
+    public async Task<Response<string>> Handle(BuyProductCommand command,CancellationToken cancellationToken)
     {
-        if (!isValid(command.Token)) return ToJSON("token is not valid",400);
+        if (!isValid(command.Token)) return Respond("token is not valid",400);
 
 
         var username = ReadToken(command.Token).Claims.First(user => user.Type == "Username").Value;
@@ -30,13 +30,13 @@ public class BuyProductHandler : IRequestHandler<BuyProductCommand,string>
                             .FindAsync(new object[] { command.Id });
  
 
-        if (account.Balance < product.Cost) return ToJSON("do not have enough money",400);
+        if (account.Balance < product.Cost) return Respond("do not have enough money",400);
 
         account.Balance -= product.Cost;
 
         await _database.SaveChangesAsync(cancellationToken);
         
-        return ToJSON("Successfully bought product",200);
+        return Respond("Successfully bought product",200);
     }
 }
 

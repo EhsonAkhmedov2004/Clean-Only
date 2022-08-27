@@ -1,9 +1,9 @@
 ﻿
 namespace Application.UserLogic.Cart.Commands.Add;
-public record class AddCommand(string Token, int id) : IRequest<string> { }
+public record class AddCommand(string Token, int id) : IRequest<Response<string>> { }
 
 
-public class AddHandler : IRequestHandler<AddCommand,string>
+public class AddHandler : IRequestHandler<AddCommand,Response<string>>
 {
     private readonly IDatabase _database;
 
@@ -13,9 +13,9 @@ public class AddHandler : IRequestHandler<AddCommand,string>
        
     }
 
-    public async Task<string> Handle(AddCommand command,CancellationToken cancellationToken)
+    public async Task<Response<string>> Handle(AddCommand command,CancellationToken cancellationToken)
     {
-        if (!isValid(command.Token)) return ToJSON("Token is not valid", 400);
+        if (!isValid(command.Token)) return Respond("Token is not valid", 400);
 
         var username = ReadToken(command.Token).Claims.First(u => u.Type == "Username").Value;
 
@@ -27,7 +27,7 @@ public class AddHandler : IRequestHandler<AddCommand,string>
                                .FirstOrDefaultAsync(i => i.Id == command.id);
 
 
-        if (product == null) return ToJSON("Product not found", 404);
+        if (product == null) return Respond("Product not found", 404);
 
         user.Cart.Add(product);
 
@@ -35,6 +35,6 @@ public class AddHandler : IRequestHandler<AddCommand,string>
 
 
 
-        return ToJSON("Product has been added to User's cart.", 200);
+        return Respond("Product has been added to User's cart.", 200);
     }
 }
